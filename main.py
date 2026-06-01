@@ -1,7 +1,4 @@
-from collections import deque
 from dotenv import load_dotenv
-from pprint import pprint
-import asyncio
 import discord
 import os
 import yt_dlp
@@ -10,7 +7,9 @@ load_dotenv()
 discord_token = os.getenv("DISCORD_TOKEN")
 bot_prefix = os.getenv("BOT_PREFIX")
 ydl_opts = {
-    'extract_flat': 'discard_in_playlist', # TODO add functionality for playlist
+    # TODO add functionality for playlist
+    # at least extract the first song of the playlist
+    'extract_flat': 'discard_in_playlist',
     'forceurl': True,
     'fragment_retries': 10,
     'ignoreerrors': 'only_download',
@@ -35,11 +34,6 @@ FFMPEG_OPTIONS = {
 
 
 class dymb(discord.Client):
-    def __init__(self, intents):
-        super().__init__(intents=intents)
-        self.songs_queue = deque()
-        self.is_playing = False
-
     async def on_ready(self):
         print(f'We have logged in as {self.user}')
 
@@ -48,7 +42,7 @@ class dymb(discord.Client):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             return ydl.extract_info(url)
 
-    # TODO add queue
+    # TODO add queue, and clean the function
     async def play_song(self, message, song):
         if song == "":
             await message.channel.send("No song especified\nUsage:!pico play song-name")
@@ -60,7 +54,8 @@ class dymb(discord.Client):
 
         # TODO remove hard coded values
         url = url['requested_formats'][1]['url']
-        # TODO add an after function that disconnects the bot after the song has finished
+        # TODO add an after function that disconnects the bot
+        # after the song has finished
         voice_client.play(discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS))
 
     async def on_message(self, message):
@@ -68,7 +63,8 @@ class dymb(discord.Client):
             return
 
         if message.content.startswith(bot_prefix):
-            # get the command in the form ["command", "all the other arguments"]
+            # get the command in the form
+            # ["command", "all the other arguments"]
             user_input = message.content.removeprefix(bot_prefix).strip().split(" ", 1)
             command = user_input[0]
             argument = user_input[1] if len(user_input) > 1 else ""
@@ -91,8 +87,6 @@ def main():
     print("Hello from dymb!")
     intents = discord.Intents.default()
     intents.message_content = True
-
-    # get all .env variables
 
     client = dymb(intents=intents)
     client.run(discord_token)
