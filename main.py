@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+import asyncio
 import discord
 import os
 import yt_dlp
@@ -9,8 +10,9 @@ bot_prefix = os.getenv("BOT_PREFIX")
 ydl_opts = {
     # TODO add functionality for playlist
     # at least extract the first song of the playlist
-    'extract_flat': 'discard_in_playlist',
+    'extract_flat': False,
     'forceurl': True,
+    'playlist_items': '1:1',
     'fragment_retries': 10,
     'ignoreerrors': 'only_download',
     'noprogress': True,
@@ -33,6 +35,8 @@ FFMPEG_OPTIONS = {
 }
 
 
+# TODO restrucure the class to set queue, current_song, is_playing, voice_client,
+#      as propierties
 class dymb(discord.Client):
     async def on_ready(self):
         print(f'We have logged in as {self.user}')
@@ -47,16 +51,37 @@ class dymb(discord.Client):
         if song == "":
             await message.channel.send("No song especified\nUsage:!pico play song-name")
             return
+
         # join the discord channel
         voice_client = await message.author.voice.channel.connect()
+
+        def after_song(error):
+            if error:
+                print(error)
+            asyncio.run_coroutine_threadsafe(
+                voice_client.disconnect(),
+                self.loop
+            )
+
         await message.channel.send(f"Adding '{song}' to the song queue!")
         url = await self.search_song(song)
 
-        # TODO remove hard coded values
-        url = url['requested_formats'][1]['url']
-        # TODO add an after function that disconnects the bot
-        # after the song has finished
-        voice_client.play(discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS))
+        # TODO implement queue
+        # TODO verify that this works with every query
+        if 'formats' in url:
+            for _format in url['formats']:
+                if _format['resolution'] == 'audio only':
+                    url = _format['url']
+                    print(url)
+
+        if 'entries' in url:
+            for entry in url['entries']:
+                for _format in entry['requested_formats']:
+                    if _format['resolution'] == 'audio only':
+                        url = _format['url']
+                        print(url)
+
+        voice_client.play(discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS), after=after_song)
 
     async def on_message(self, message):
         if message.author == self.user:

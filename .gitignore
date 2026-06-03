@@ -6,6 +6,10 @@ dist/
 wheels/
 *.egg-info
 
+# utilities and tests
+*.txt
+ytdlp_otps_tester.py 
+
 # Virtual environments
 .venv
 

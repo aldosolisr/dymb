@@ -1,11 +1,27 @@
 # dytb (Discord Youtube Music Bot)
 
-This is an experimental discord bot that plays music from Youtube!
+This is an experimental discord bot that plays music from Youtube and Youtube Music!
 
-It is not functional yet, but it is capable of playing one song, yes just one song but it kind
-of works. 
+it is capable of searching and playing songs by the name and url.
 
-This is version 0.0.1
+This version is still experimental, so errors are to be expected. 
+
+## Currently avaible commands
+
+* play 
+
+## Commands to be implemented
+
+* skip (skips a song)
+* pause (pauses the song)
+* queue (list the queue)
+
+## Features to be implemented
+
+* Queue
+
+
+This is version 0.0.2
 
 ## How to configure
 Create a .env file inside the directory and add the following
